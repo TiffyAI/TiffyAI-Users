@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TiffyAI Gold Key</title>
+  <title>TiffyAI Mainnet Gold Key</title>
   <style>
     body {
       background: #0c0c0c;
@@ -61,7 +61,7 @@
 
   <div class="box">
     <h2 style="color: #4af0f8;">Claim Your Gold Key</h2>
-    <p>Generate your personal referral link and share it to unlock the Lucky Wheel + NFT Badge!</p>
+    <p>Generate your personal referral link and share it to unlock the Lucky Wheel + Mainnet NFT Badge!</p>
 
     <input id="usernameInput" placeholder="Enter your username..." />
     <br>
@@ -83,7 +83,7 @@
 
     <div id="mintSection">
       <h3 style="color: gold;">You unlocked the Gold Key!</h3>
-      <button class="mint" onclick="mintNFT()">Mint NFT Badge</button>
+      <button class="mint" onclick="mintNFT()">Mint Mainnet NFT Badge</button>
     </div>
   </div>
 
@@ -104,7 +104,7 @@
     async function connectWallet() {
       if (!window.ethereum) {
         const link = isMobile()
-          ? 'https://metamask.app.link/dapp/tiffyai.github.io/On-boarding-/'
+          ? 'https://metamask.app.link/dapp/tiffyai.github.io/TiffyAI-Users/'
           : 'https://metamask.io/download/';
         return window.open(link, '_blank');
       }
@@ -116,7 +116,7 @@
         if (!username) return alert("Please enter a username.");
         localStorage.setItem('tiffyUsername', username);
 
-        document.getElementById('walletInfo').innerText = `Welcome back, ${username}!`;
+        document.getElementById('walletInfo').innerText = `Hey ${username} you doing great!`;
         const refLink = `https://tiffyai.github.io/Keys/?ref=${wallet}`;
         document.getElementById('refLinkDisplay').innerText = `Referral: ${refLink}`;
         showShareButtons(refLink);
@@ -127,7 +127,7 @@
 
     function showShareButtons(link) {
       document.getElementById('shareSection').style.display = 'block';
-      const encoded = encodeURIComponent("I just claimed my Mainnet Treasure Key on TiffyAI — Grab yours here: " + link);
+      const encoded = encodeURIComponent("I just claimed my Gold Treasure Key NFT for Mainnet on TiffyAI — Grab yours here: " + link);
       const buttons = `
         <a href="https://wa.me/?text=${encoded}" target="_blank"><button class="whatsapp" onclick="countShare()">WhatsApp</button></a>
         <a href="https://twitter.com/intent/tweet?text=${encoded}" target="_blank"><button class="twitter" onclick="countShare()">Twitter</button></a>
@@ -191,7 +191,7 @@
     }
 
     function mintNFT() {
-      alert("Minting coming soon! This will mint the Gold Key NFT badge on BNB Mainnet or Testnet.");
+      alert("Minting coming soon! This will mint the Gold Key NFT badge on BNB Mainnet to turn your Testnet tokens into much more valuable tokens.");
     }
 
     updateShareStatus();
