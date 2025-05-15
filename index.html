@@ -152,7 +152,7 @@
       const username = localStorage.getItem('tiffyUsername') || 'Tiffy Friend';
       const status = document.getElementById('shareCountStatus');
       const remaining = Math.max(0, 10 - shareCount);
-      status.innerText = `Welcome back, ${username}! You’ve shared ${shareCount}/10 times. Just ${remaining} more to go for Mainnet access… Time is running out.`;
+      status.innerText = `So far ${username}! You’ve shared ${shareCount}/10 times. Just ${remaining} more to go for Mainnet access… Time is running out.`;
 
       if (shareCount >= 3) document.getElementById('wheelSection').style.display = 'block';
       if (shareCount >= 10) document.getElementById('mintSection').style.display = 'block';
