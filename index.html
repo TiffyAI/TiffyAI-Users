@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TiffyAI Users Portal</title>
+<style>
+    body { background-color: #000; color: #fff; font-family: Arial, sans-serif; }
+    #container { max-width: 800px; margin: auto; padding: 20px; text-align: center; }
+    h1 { color: #39ff14; text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14, 0 0 20px #39ff14; }
+    button, .share-btn { 
+        background: #39ff14; color: #000; border: none; padding: 10px 20px; margin: 5px; 
+        cursor: pointer; border-radius: 5px; font-size: 16px; text-decoration: none; display: inline-block; 
+    }
+    #shareSection { display: none; margin-top: 10px; }
+    #shareSection a { margin: 0 10px; }
+    .neon { 
+        font-size: 18px; font-weight: bold; color: #39ff14; 
+        text-shadow:
+            0 0 5px #39ff14,
+            0 0 10px #39ff14,
+            0 0 20px #39ff14,
+            0 0 40px #ff0080,
+            0 0 80px #ff0080,
+            0 0 90px #ff0080,
+            0 0 100px #ff0080,
+            0 0 150px #ff0080;
+    }
+    #address { margin: 10px 0; font-weight: bold; }
+    #counts { margin: 15px 0; }
+    #counts span { margin: 0 10px; }
+    img#rewardImage { max-width: 100%; height: auto; margin-top: 10px; border: 2px solid #fff; border-radius: 5px; }
+</style>
+</head>
+<body>
+<div id="container">
+    <h1>TiffyAI Users Portal</h1>
+    <div id="address">Not connected</div>
+    <button id="connectWallet" class="button">Connect Wallet</button>
+    <div id="counts">
+        <span>Blue Keys: <span id="blueCount">0</span></span>
+        <span>Gold Keys: <span id="goldCount">0</span></span>
+    </div>
+    <button id="shareBtn">Share & Unlock Rewards</button>
+    <div id="shareSection">
+        <p>Share on:</p>
+        <a href="#" class="share-btn" id="whatsappShare">WhatsApp</a>
+        <a href="#" class="share-btn" id="twitterShare">Twitter</a>
+        <a href="#" class="share-btn" id="telegramShare">Telegram</a>
+        <a href="#" class="share-btn" id="discordShare">Discord</a>
+    </div>
+    <div id="shareStatus" class="neon"></div>
+    <div>
+        <img id="rewardImage" src="" alt="Reward">
+    </div>
+</div>
+
+<script>
+// Persistent data keys
+const KEY_SHARE = 'dailyShareCount';
+const KEY_LASTDATE = 'lastShareDate';
+const KEY_BLUE = 'blueKeys';
+const KEY_GOLD = 'goldKeys';
+
+// Initialize values from localStorage or defaults
+let dailyShareCount = parseInt(localStorage.getItem(KEY_SHARE)) || 0;
+let lastShareDate = localStorage.getItem(KEY_LASTDATE) || '';
+let blueKeys = parseInt(localStorage.getItem(KEY_BLUE)) || 0;
+let goldKeys = parseInt(localStorage.getItem(KEY_GOLD)) || 0;
+
+// Check and reset daily share count if a new day has begun
+function checkDateReset() {
+    const today = new Date().toISOString().slice(0,10);
+    if (lastShareDate !== today) {
+        dailyShareCount = 0;
+        lastShareDate = today;
+        localStorage.setItem(KEY_LASTDATE, today);
+        localStorage.setItem(KEY_SHARE, dailyShareCount);
+    }
+}
+checkDateReset();
+
+// Update displayed key counts
+function updateCounts() {
+    document.getElementById('blueCount').textContent = blueKeys;
+    document.getElementById('goldCount').textContent = goldKeys;
+}
+updateCounts();
+
+// MetaMask Connect
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+            const address = accounts[0];
+            document.getElementById('address').textContent = 'Connected: ' + address;
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        alert('MetaMask not found. Install MetaMask!');
+    }
+}
+document.getElementById('connectWallet').addEventListener('click', connectWallet);
+// If already connected, display the address
+if (window.ethereum && ethereum.selectedAddress) {
+    document.getElementById('address').textContent = 'Connected: ' + ethereum.selectedAddress;
+}
+
+// Toggle share section visibility
+document.getElementById('shareBtn').addEventListener('click', function() {
+    const sec = document.getElementById('shareSection');
+    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+});
+
+// Increment share count and award keys at milestones
+function incrementShare() {
+    checkDateReset();
+    dailyShareCount++;
+    localStorage.setItem(KEY_SHARE, dailyShareCount);
+    // Award keys at milestones: 5 shares → +1 Blue Key; 10 shares → +1 Gold Key
+    if (dailyShareCount % 5 === 0) {
+        blueKeys++;
+        localStorage.setItem(KEY_BLUE, blueKeys);
+    }
+    if (dailyShareCount % 10 === 0) {
+        goldKeys++;
+        localStorage.setItem(KEY_GOLD, goldKeys);
+    }
+    updateCounts();
+    updateStatus();
+}
+
+// Utility to encode share text
+function shareText() {
+    return encodeURIComponent("Check out TiffyAI Users Portal!");
+}
+
+// Share button handlers
+document.getElementById('whatsappShare').addEventListener('click', function(e) {
+    e.preventDefault();
+    incrementShare();
+    const url = "https://api.whatsapp.com/send?text=" + shareText();
+    window.open(url, '_blank');
+});
+document.getElementById('twitterShare').addEventListener('click', function(e) {
+    e.preventDefault();
+    incrementShare();
+    const url = "https://twitter.com/intent/tweet?text=" + shareText();
+    window.open(url, '_blank');
+});
+document.getElementById('telegramShare').addEventListener('click', function(e) {
+    e.preventDefault();
+    incrementShare();
+    const url = "https://telegram.me/share/url?url=" + encodeURIComponent(window.location.href) + "&text=" + shareText();
+    window.open(url, '_blank');
+});
+document.getElementById('discordShare').addEventListener('click', function(e) {
+    e.preventDefault();
+    incrementShare();
+    // Copy invite link to clipboard for Discord sharing
+    const invite = "Join me on TiffyAI: " + window.location.href;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(invite).then(() => alert("Share link copied to clipboard!"));
+    } else {
+        prompt("Copy this link and share on Discord:", invite);
+    }
+});
+
+// Update reward image based on Gold Keys count
+function updateRewardImage() {
+    const img = document.getElementById('rewardImage');
+    if (goldKeys > 0) {
+        let index = goldKeys - 1;
+        if (index > 9) index = 9; // Use last image for 10+ keys
+        const filename = index === 0 ? 'Reward.jpg' : 'Reward' + index + '.jpg';
+        img.src = filename;
+    } else {
+        img.src = "";
+    }
+}
+
+// Update the status message and countdown timer
+function updateStatus() {
+    const statusEl = document.getElementById('shareStatus');
+    checkDateReset();
+    const X = dailyShareCount;
+    const threshold = 10;
+    const Y = Math.max(0, threshold - X);
+    const Z = goldKeys;
+    // Calculate time left until midnight
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0);
+    const diff = tomorrow - now;
+    const HH = Math.floor(diff / 3600000);
+    const MM = Math.floor((diff % 3600000) / 60000);
+    statusEl.textContent = 
+        "So far Cats! You\u2019ve shared " + X + " times. Just " + Y + 
+        " more to go for Treasure Rewards & You Have " + Z + 
+        " Gold Keys for Mainnet Eligibility. Collect All 10 to Enable Mainnet NFT Key Exchange & AI Trading. You Have " +
+        HH + " Hours " + MM + " Min Left Before The Clock Will Reset.";
+    updateRewardImage();
+}
+
+// Initial status update and periodic refresh
+updateStatus();
+setInterval(updateStatus, 60000);
+</script>
+</body>
+</html>
