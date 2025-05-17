@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background-image: url('MintBadgePlaceholder.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      color: #fff;
+      text-align: center;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 600px;
+      margin: 4rem auto;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00ffff;
+    }
+
+    button {
+      background: #ff00cc;
+      color: white;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #ff00cc;
+      margin-top: 1rem;
+    }
+
+    .neon-text {
+      font-size: 1.25rem;
+      margin: 1rem 0;
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff;
+    }
+
+    .reward-img {
+      width: 180px;
+      margin: 1rem auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 0 12px #00ffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="glass">
+    <h1>Welcome to TiffyAI User Zone</h1>
+    <div id="walletAddress" class="neon-text">Not connected</div>
+    <button onclick="connectWallet()">Connect Wallet</button>
+
+    <div class="neon-text" id="scoreSection"></div>
+    <div class="neon-text" id="goldKeySection"></div>
+    <div class="neon-text" id="cooldownTimer"></div>
+
+    <button onclick="shareNow()">Share & Unlock Rewards</button>
+
+    <div class="neon-text" id="rewardSection"></div>
+    <div class="neon-text" id="mainnetBtn"></div>
+  </div>
+
+  <script>
+    let address;
+    const cooldownKey = 'tiffy_cooldown';
+    const shareCountKey = 'tiffy_share_count';
+    const goldKeyKey = 'tiffy_gold_keys';
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        address = accounts[0];
+        document.getElementById('walletAddress').textContent = 'Connected: ' + address;
+        updateUI();
+      } else {
+        alert('Please install MetaMask.');
+      }
+    }
+
+    function getShareCount() {
+      return parseInt(localStorage.getItem(shareCountKey)) || 0;
+    }
+
+    function getGoldKeys() {
+      return parseInt(localStorage.getItem(goldKeyKey)) || 0;
+    }
+
+    function shareNow() {
+      const now = Date.now();
+      const cooldownEnd = parseInt(localStorage.getItem(cooldownKey)) || 0;
+      if (now < cooldownEnd) {
+        alert("Treasure Cooldown active. Keep sharing to earn Gold Keys!");
+        return;
+      }
+      let shares = getShareCount() + 1;
+      localStorage.setItem(shareCountKey, shares);
+      if (shares % 10 === 0) {
+        let keys = getGoldKeys() + 1;
+        localStorage.setItem(goldKeyKey, keys);
+        if (keys === 10) {
+          document.getElementById('mainnetBtn').innerHTML = '<button onclick="goToExchange()">Go to Mainnet Exchange</button>';
+        }
+      }
+      updateUI();
+    }
+
+    function updateUI() {
+      const shares = getShareCount();
+      const keys = getGoldKeys();
+      document.getElementById('scoreSection').textContent = `So far Cats! You’ve shared ${shares} times.`;
+      document.getElementById('goldKeySection').textContent = `You Have ${keys} Gold Keys for Mainnet Eligibility.`;
+
+      let rewardImg = keys === 0 ? 'Reward.jpg' : `Reward${Math.min(keys, 9)}.jpg`;
+      document.getElementById('rewardSection').innerHTML = `<img src="${rewardImg}" class="reward-img" alt="Reward Achievement">`;
+
+      const cooldownEnd = parseInt(localStorage.getItem(cooldownKey)) || 0;
+      const now = Date.now();
+      if (cooldownEnd > now) {
+        let timeLeft = cooldownEnd - now;
+        let hours = Math.floor(timeLeft / 3600000);
+        let mins = Math.floor((timeLeft % 3600000) / 60000);
+        document.getElementById('cooldownTimer').textContent = `You Have ${hours} Hour ${mins} Min Left Before The Clock Will Reset`;
+      } else {
+        document.getElementById('cooldownTimer').textContent = 'Treasure Cooldown expired. Keep sharing to earn rewards!';
+      }
+    }
+
+    function goToExchange() {
+      window.location.href = '/Mainnet-Exchange';
+    }
+
+    // Simulate treasure claim cooldown for demo purposes:
+    function triggerTreasureCooldown() {
+      const oneDay = 24 * 60 * 60 * 1000;
+      localStorage.setItem(cooldownKey, Date.now() + oneDay);
+      updateUI();
+    }
+
+    // Auto update on load
+    window.onload = updateUI;
+  </script>
+</body>
+</html>
