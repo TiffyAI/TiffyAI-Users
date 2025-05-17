@@ -2,187 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TiffyAI User Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TiffyAI Users</title>
   <style>
     body {
-      background-color: #000;
-      color: #fff;
+      margin: 0;
       font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #111 0%, #000 100%);
+      color: #00f7ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
       text-align: center;
-      padding: 20px;
     }
-    h1, h2 {
-      color: #39ff14;
-      text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
-    .neon-text {
-      color: #ff073a;
-      text-shadow: 0 0 8px #ff073a, 0 0 16px #ff073a;
+
+    .glow {
+      color: #00f7ff;
+      text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff, 0 0 20px #00f7ff;
     }
-    .button {
-      background-color: #000;
-      color: #39ff14;
-      border: 2px solid #39ff14;
-      padding: 10px 20px;
-      margin: 10px;
+
+    button {
+      background: #00f7ff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-weight: bold;
+      color: #000;
       cursor: pointer;
-      font-size: 1.1em;
-      border-radius: 5px;
-      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+      margin: 1rem;
     }
-    .button:hover {
-      box-shadow: 0 0 20px #39ff14, 0 0 30px #39ff14;
-    }
-    input[type="text"] {
-      background: #111;
-      border: 2px solid #39ff14;
-      color: #39ff14;
-      padding: 8px;
-      width: 80%;
-      max-width: 400px;
-      text-align: center;
-    }
-    #rewardImg {
-      margin-top: 20px;
-      max-width: 300px;
+
+    #reward-img {
+      width: 200px;
+      margin-top: 1rem;
       display: none;
     }
-    #mainnetBtn {
+
+    .hidden {
       display: none;
-    }
-    #countdown {
-      color: #ff073a;
-      text-shadow: 0 0 10px #ff073a, 0 0 20px #ff073a;
-      margin: 10px 0;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
 </head>
 <body>
-  <h1>TiffyAI Users Portal</h1>
+  <h1 class="glow">Welcome to TiffyAI User Zone</h1>
+  <p id="address"></p>
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <p id="share-status" class="glow"></p>
+  <p id="cooldown" class="glow"></p>
 
-  <button class="button" onclick="connectWallet()">Connect Wallet</button>
-  <p id="walletAddress"></p>
-
-  <input type="text" id="refLink" readonly placeholder="Your referral link will appear here">
-
-  <div id="countdown" class="neon-text"></div>
-
-  <h2>Share & Earn</h2>
-  <button class="button" onclick="share('whatsapp')">Share WhatsApp</button>
-  <button class="button" onclick="share('twitter')">Share Twitter</button>
-  <button class="button" onclick="share('telegram')">Share Telegram</button>
-  <button class="button" onclick="share('discord')">Share Discord</button>
-
-  <div id="shareStats">
-    <p>Shares: <span id="shareCount">0</span></p>
-    <p>Blue Keys: <span id="blueCount">0</span></p>
-    <p>Gold Keys: <span id="goldCount">0</span></p>
+  <div id="wheel-section" class="hidden">
+    <p class="glow">You unlocked the Lucky Wheel!</p>
+    <button onclick="location.href='/Lucky-Wheel'">Open Lucky Wheel</button>
   </div>
 
-  <button id="luckyWheelBtn" class="button" onclick="alert('Lucky Wheel unlocked!')" disabled>Lucky Wheel</button>
-  <button id="mainnetBtn" class="button" onclick="window.location.href='/Mainnet-Exchange'">Mainnet Exchange</button>
+  <div id="gold-section" class="hidden">
+    <p class="glow">You unlocked the Gold Key!</p>
+    <img id="reward-img" src="" alt="Reward Achievement"/>
+  </div>
 
-  <img id="rewardImg" src="" alt="Reward Image">
-  <br><br>
-  <img src="MintBadgePlaceholder.jpg" alt="Mint Badge" style="max-width:100px;">
+  <div id="exchange-section" class="hidden">
+    <p class="glow">You've unlocked Mainnet access!</p>
+    <button onclick="location.href='/Mainnet-Exchange'">Go to Mainnet Exchange</button>
+  </div>
 
   <script>
+    let address = "";
+
     async function connectWallet() {
       if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const address = accounts[0];
-        document.getElementById('walletAddress').innerText = "Connected: " + address;
-        const ref = window.location.origin + window.location.pathname + '?ref=' + address;
-        document.getElementById('refLink').value = ref;
+        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        address = accounts[0];
+        document.getElementById("address").innerText = `Connected: ${address}`;
+        initUserData();
       } else {
-        const provider = new WalletConnectProvider.default({
-          infuraId: "27e484dcd9e3efcfd25a83a78777cdf1",
-        });
-        await provider.enable();
-        const web3 = new Web3(provider);
-        const accounts = await web3.eth.getAccounts();
-        const address = accounts[0];
-        document.getElementById('walletAddress').innerText = "Connected: " + address;
-        const ref = window.location.origin + window.location.pathname + '?ref=' + address;
-        document.getElementById('refLink').value = ref;
+        alert("MetaMask not found");
       }
     }
 
-    function share(platform) {
-      let shareCount = parseInt(localStorage.getItem('tiffyShareCount') || '0');
-      shareCount++;
-      localStorage.setItem('tiffyShareCount', shareCount);
-      if (!localStorage.getItem('tiffyFirstShare')) {
-        localStorage.setItem('tiffyFirstShare', Date.now());
+    function initUserData() {
+      let shares = parseInt(localStorage.getItem("shares") || "0");
+      let goldKeys = parseInt(localStorage.getItem("goldKeys") || "0");
+      let lastShare = parseInt(localStorage.getItem("lastShareTime") || "0");
+
+      // Display share count
+      document.getElementById("share-status").innerText =
+        `So far Cats! You’ve shared ${shares} times. Just ${Math.max(0, 10 - shares)} more to go for Mainnet access… Time is running out.`;
+
+      // Cooldown timer
+      const cooldown = 86400; // 24 hours
+      let now = Math.floor(Date.now() / 1000);
+      let timeLeft = cooldown - (now - lastShare);
+
+      if (timeLeft > 0) {
+        let hrs = Math.floor(timeLeft / 3600);
+        let mins = Math.floor((timeLeft % 3600) / 60);
+        let secs = timeLeft % 60;
+        document.getElementById("cooldown").innerText = `Time left to reset: ${hrs}h ${mins}m ${secs}s`;
+      } else {
+        document.getElementById("cooldown").innerText = "Cooldown expired. Share again now!";
       }
 
-      const link = document.getElementById('refLink').value || window.location.href;
-      if (platform === 'whatsapp') {
-        window.open(`https://wa.me/?text=Join%20TiffyAI!%20${encodeURIComponent(link)}`, '_blank');
-      } else if (platform === 'twitter') {
-        window.open(`https://twitter.com/intent/tweet?text=Join%20TiffyAI!&url=${encodeURIComponent(link)}`, '_blank');
-      } else if (platform === 'telegram') {
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Join%20TiffyAI!`, '_blank');
-      } else if (platform === 'discord') {
-        navigator.clipboard.writeText(link);
-        alert("Referral link copied. Paste it in your favorite Discord server!");
+      // Unlock Lucky Wheel
+      if (shares >= 3) {
+        document.getElementById("wheel-section").classList.remove("hidden");
       }
 
-      updateStats();
-    }
+      // Unlock Gold Key
+      let earnedGoldKeys = Math.floor(shares / 10);
+      if (earnedGoldKeys > goldKeys) {
+        goldKeys = earnedGoldKeys;
+        localStorage.setItem("goldKeys", goldKeys);
+      }
 
-    function updateStats() {
-      let shares = parseInt(localStorage.getItem('tiffyShareCount') || '0');
-      let blue = Math.floor(shares / 5);
-      let gold = Math.floor(shares / 10);
-      let prevGold = parseInt(localStorage.getItem('tiffyGoldKeys') || '0');
+      if (goldKeys > 0) {
+        document.getElementById("gold-section").classList.remove("hidden");
+        const rewardImage = document.getElementById("reward-img");
+        rewardImage.src = `Reward${Math.min(goldKeys, 9)}.jpg`;
+        rewardImage.style.display = "block";
+      }
 
-      document.getElementById('shareCount').innerText = shares;
-      document.getElementById('blueCount').innerText = blue;
-      document.getElementById('goldCount').innerText = gold;
-
-      localStorage.setItem('tiffyBlueKeys', blue);
-      localStorage.setItem('tiffyGoldKeys', gold);
-
-      if (blue >= 3) document.getElementById('luckyWheelBtn').disabled = false;
-      if (gold >= 10) document.getElementById('mainnetBtn').style.display = 'inline-block';
-
-      if (gold > prevGold) {
-        document.getElementById('rewardImg').src = `Reward${gold}.jpg`;
-        document.getElementById('rewardImg').style.display = 'block';
-        localStorage.setItem('tiffyGoldKeys', gold);
-        if (gold === 1) {
-          window.location.href = '/treasure';
-        }
+      // Unlock Exchange after 10 Gold Keys
+      if (goldKeys >= 10) {
+        document.getElementById("exchange-section").classList.remove("hidden");
       }
     }
-
-    function startCountdown() {
-      let first = parseInt(localStorage.getItem('tiffyFirstShare') || '0');
-      setInterval(() => {
-        let now = Date.now();
-        let diff = 86400000 - (now - first);
-        if (diff <= 0) {
-          localStorage.removeItem('tiffyShareCount');
-          localStorage.removeItem('tiffyFirstShare');
-          document.getElementById('countdown').innerText = "New sharing day started!";
-          updateStats();
-          return;
-        }
-        let hrs = Math.floor(diff / 3600000);
-        let mins = Math.floor((diff % 3600000) / 60000);
-        let secs = Math.floor((diff % 60000) / 1000);
-        document.getElementById('countdown').innerText =
-          `${hrs.toString().padStart(2,'0')}h : ${mins.toString().padStart(2,'0')}m : ${secs.toString().padStart(2,'0')}s remaining`;
-      }, 1000);
-    }
-
-    window.onload = () => {
-      updateStats();
-      startCountdown();
-    };
   </script>
 </body>
 </html>
