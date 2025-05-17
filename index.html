@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('MintBadgePlaceholder.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      text-align: center;
+    }
+    .container {
+      backdrop-filter: blur(15px);
+      background-color: rgba(0, 0, 0, 0.6);
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      color: #00f5ff;
+    }
+    .score-section {
+      font-size: 1.2em;
+      color: #ff00ff;
+      margin: 10px 0;
+    }
+    .btn {
+      padding: 12px 25px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(45deg, #00f5ff, #ff00ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      box-shadow: 0 0 10px #00f5ff;
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #ff00ff, #00f5ff);
+    }
+    #reward-img {
+      margin-top: 20px;
+      width: 80%;
+      max-width: 300px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to TiffyAI User Zone</h1>
+    <div id="wallet-status">Not Connected</div>
+    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+
+    <div class="score-section" id="share-count"></div>
+    <div class="score-section" id="gold-key-count"></div>
+    <div class="score-section" id="cooldown-timer"></div>
+
+    <button class="btn" onclick="shareNow()">Share & Unlock Rewards</button>
+
+    <div id="reward-section">
+      <h2>You unlocked the Gold Key!</h2>
+      <img id="reward-img" src="" alt="Reward Image">
+    </div>
+
+    <div id="mainnet-section" style="display: none;">
+      <h2>You've unlocked Mainnet access!</h2>
+      <button class="btn" onclick="window.location.href='/Mainnet-Exchange'">Go to Mainnet Exchange</button>
+    </div>
+  </div>
+
+  <script>
+    let shares = parseInt(localStorage.getItem('shares') || '0');
+    let goldKeys = parseInt(localStorage.getItem('goldKeys') || '0');
+    let cooldownStart = localStorage.getItem('cooldownStart');
+    const cooldownHours = 24;
+
+    function connectWallet() {
+      if (typeof window.ethereum !== 'undefined') {
+        ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
+          document.getElementById('wallet-status').innerText = `Connected: ${accounts[0]}`;
+        });
+      } else {
+        alert('MetaMask is not installed');
+      }
+    }
+
+    function updateDisplay() {
+      document.getElementById('share-count').innerText =
+        `So far Cats! You’ve shared ${shares} times. Just 10 more to go for Treasure Rewards & You Have ${goldKeys} Gold Keys for Mainnet Eligibility.`;
+      document.getElementById('gold-key-count').innerText =
+        'Collect All 10 to Enable Mainnet NFT Key Exchange & AI Trading.';
+
+      if (cooldownStart) {
+        const timeLeft = getCooldownRemaining();
+        document.getElementById('cooldown-timer').innerText =
+          `You Have ${timeLeft.hours} Hour ${timeLeft.minutes} Min Left Before The Clock Will Reset`;
+      } else {
+        document.getElementById('cooldown-timer').innerText = 'Start sharing to begin your journey!';
+      }
+
+      // Reward image
+      if (goldKeys > 0) {
+        const rewardImg = document.getElementById('reward-img');
+        rewardImg.src = `Reward${goldKeys > 9 ? 9 : goldKeys}.jpg`;
+        rewardImg.style.display = 'block';
+      }
+
+      if (goldKeys >= 10) {
+        document.getElementById('mainnet-section').style.display = 'block';
+      }
+    }
+
+    function getCooldownRemaining() {
+      const start = new Date(parseInt(cooldownStart));
+      const now = new Date();
+      const diff = cooldownHours * 3600000 - (now - start);
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      return { hours, minutes };
+    }
+
+    function shareNow() {
+      if (!cooldownStart) {
+        cooldownStart = new Date().getTime();
+        localStorage.setItem('cooldownStart', cooldownStart);
+      }
+
+      shares++;
+      localStorage.setItem('shares', shares);
+
+      if (shares % 10 === 0) {
+        goldKeys++;
+        localStorage.setItem('goldKeys', goldKeys);
+        alert('Gold Key Unlocked!');
+      }
+
+      updateDisplay();
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
