@@ -2,217 +2,187 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TiffyAI Mainnet Gold Key</title>
+  <title>TiffyAI User Portal</title>
   <style>
     body {
-      background: #0c0c0c;
+      background-color: #000;
       color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 40px 20px;
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #39ff14;
+      text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    }
+    .neon-text {
+      color: #ff073a;
+      text-shadow: 0 0 8px #ff073a, 0 0 16px #ff073a;
+    }
+    .button {
+      background-color: #000;
+      color: #39ff14;
+      border: 2px solid #39ff14;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 1.1em;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    }
+    .button:hover {
+      box-shadow: 0 0 20px #39ff14, 0 0 30px #39ff14;
+    }
+    input[type="text"] {
+      background: #111;
+      border: 2px solid #39ff14;
+      color: #39ff14;
+      padding: 8px;
+      width: 80%;
+      max-width: 400px;
       text-align: center;
     }
-
-    .box {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      padding: 30px;
-      border-radius: 15px;
-      border: 1px solid #4af0f8;
-      box-shadow: 0 0 15px #9055ff;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    input {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 15px;
-      width: 80%;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 8px;
-      border-radius: 10px;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .whatsapp { background: linear-gradient(90deg, #00ffb2, #00aaff); color: white; }
-    .twitter  { background: linear-gradient(90deg, #1da1f2, #9055ff); color: white; }
-    .telegram { background: linear-gradient(90deg, #28a8e9, #9055ff); color: white; }
-    .discord  { background: linear-gradient(90deg, #5865f2, #9055ff); color: white; }
-    .mint     { background: linear-gradient(90deg, gold, #ffdd57); color: #000; }
-
-    #mintSection, #wheelSection, #mainnetExchangeSection {
-      display: none;
+    #rewardImg {
       margin-top: 20px;
+      max-width: 300px;
+      display: none;
     }
-
-    #wheelButton {
-      animation: glow 2s infinite alternate;
+    #mainnetBtn {
+      display: none;
     }
-
     #countdown {
-      margin-top: 15px;
-      color: #ffcc00;
-      font-weight: bold;
-      text-shadow: 0 0 5px #ffcc00, 0 0 15px #ffcc00;
-      font-size: 18px;
-    }
-
-    #shareCountStatus {
-      font-size: 18px;
-      font-weight: bold;
-      color: #4af0f8;
-      text-shadow: 0 0 5px #4af0f8, 0 0 10px #9055ff;
-      min-height: 40px;
-      white-space: pre-wrap;
-    }
-
-    #rewardImage {
-      margin-top: 15px;
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px gold;
-    }
-
-    @keyframes glow {
-      from { box-shadow: 0 0 10px #4af0f8; }
-      to   { box-shadow: 0 0 20px #9055ff; }
+      color: #ff073a;
+      text-shadow: 0 0 10px #ff073a, 0 0 20px #ff073a;
+      margin: 10px 0;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
 </head>
 <body>
+  <h1>TiffyAI Users Portal</h1>
 
-  <div class="box">
-    <h2 style="color: #4af0f8;">Claim Your Gold Key</h2>
-    <p>Generate your personal referral link and share it to unlock the Lucky Wheel + Mainnet NFT Badge!</p>
+  <button class="button" onclick="connectWallet()">Connect Wallet</button>
+  <p id="walletAddress"></p>
 
-    <input id="usernameInput" placeholder="Enter your username..." />
-    <br>
-    <button id="connectWalletBtn">Connect Wallet</button>
-    <p id="walletInfo"></p>
-    <p id="refLinkDisplay" style="font-size: 14px; color: #aaa;"></p>
+  <input type="text" id="refLink" readonly placeholder="Your referral link will appear here">
 
-    <div id="shareSection" style="margin-top: 20px; display: none;">
-      <p><strong>Share this with friends:</strong></p>
-      <div id="shareButtons"></div>
-      <p id="shareCountStatus"></p>
-      <p id="countdown"></p>
-    </div>
+  <div id="countdown" class="neon-text"></div>
 
-    <div id="wheelSection">
-      <h3 style="color: #4af0f8;">You unlocked the Lucky Wheel!</h3>
-      <button id="wheelButton" onclick="openLuckyWheel()">Open Lucky Wheel</button>
-    </div>
+  <h2>Share & Earn</h2>
+  <button class="button" onclick="share('whatsapp')">Share WhatsApp</button>
+  <button class="button" onclick="share('twitter')">Share Twitter</button>
+  <button class="button" onclick="share('telegram')">Share Telegram</button>
+  <button class="button" onclick="share('discord')">Share Discord</button>
 
-    <div id="mintSection">
-      <h3 style="color: gold;">You unlocked the Gold Key!</h3>
-      <img id="rewardImage" src="" alt="Reward Image" />
-      <button class="mint" onclick="mintNFT()">Mint Mainnet NFT Badge</button>
-    </div>
-
-    <div id="mainnetExchangeSection">
-      <h3 style="color: #4af0f8;">Mainnet Exchange Unlocked!</h3>
-      <button onclick="goToMainnetExchange()">Go to Mainnet Exchange</button>
-    </div>
+  <div id="shareStats">
+    <p>Shares: <span id="shareCount">0</span></p>
+    <p>Blue Keys: <span id="blueCount">0</span></p>
+    <p>Gold Keys: <span id="goldCount">0</span></p>
   </div>
 
+  <button id="luckyWheelBtn" class="button" onclick="alert('Lucky Wheel unlocked!')" disabled>Lucky Wheel</button>
+  <button id="mainnetBtn" class="button" onclick="window.location.href='/Mainnet-Exchange'">Mainnet Exchange</button>
+
+  <img id="rewardImg" src="" alt="Reward Image">
+  <br><br>
+  <img src="MintBadgePlaceholder.jpg" alt="Mint Badge" style="max-width:100px;">
+
   <script>
-    let wallet = '';
-    let shareCount = parseInt(localStorage.getItem('tiffyShareCount') || '0');
-    let savedName = localStorage.getItem('tiffyUsername');
-    let shareStart = parseInt(localStorage.getItem('tiffyShareStart') || '0');
-
-    if (savedName) {
-      document.getElementById('usernameInput').value = savedName;
-    }
-
-    function isMobile() {
-      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
     async function connectWallet() {
-      if (!window.ethereum) {
-        const link = isMobile()
-          ? 'https://metamask.app.link/dapp/tiffyai.github.io/TiffyAI-Users/'
-          : 'https://metamask.io/download/';
-        return window.open(link, '_blank');
-      }
-
-      try {
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        wallet = accounts[0];
-        const username = document.getElementById('usernameInput').value.trim();
-        if (!username) return alert("Please enter a username.");
-        localStorage.setItem('tiffyUsername', username);
-        document.getElementById('walletInfo').innerText = `Hey ${username}, you're doing great!`;
-        document.getElementById('connectWalletBtn').style.display = "none";
-
-        const refLink = `https://tiffyai.github.io/Keys/?ref=${wallet}`;
-        document.getElementById('refLinkDisplay').innerText = `Referral: ${refLink}`;
-        showShareButtons(refLink);
-      } catch (err) {
-        alert("Wallet connection failed: " + err.message);
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const address = accounts[0];
+        document.getElementById('walletAddress').innerText = "Connected: " + address;
+        const ref = window.location.origin + window.location.pathname + '?ref=' + address;
+        document.getElementById('refLink').value = ref;
+      } else {
+        const provider = new WalletConnectProvider.default({
+          infuraId: "27e484dcd9e3efcfd25a83a78777cdf1",
+        });
+        await provider.enable();
+        const web3 = new Web3(provider);
+        const accounts = await web3.eth.getAccounts();
+        const address = accounts[0];
+        document.getElementById('walletAddress').innerText = "Connected: " + address;
+        const ref = window.location.origin + window.location.pathname + '?ref=' + address;
+        document.getElementById('refLink').value = ref;
       }
     }
 
-    document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
-
-    function showShareButtons(link) {
-      document.getElementById('shareSection').style.display = 'block';
-      const encoded = encodeURIComponent("I just claimed my Gold Treasure Key NFT for Mainnet on TiffyAI — Grab yours here: " + link);
-      const buttons = `
-        <a href="https://wa.me/?text=${encoded}" target="_blank"><button class="whatsapp" onclick="countShare()">WhatsApp</button></a>
-        <a href="https://twitter.com/intent/tweet?text=${encoded}" target="_blank"><button class="twitter" onclick="countShare()">Twitter</button></a>
-        <a href="https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encoded}" target="_blank"><button class="telegram" onclick="countShare()">Telegram</button></a>
-        <a href="https://discord.gg/YOUR_INVITE_CODE" target="_blank"><button class="discord" onclick="countShare()">Discord</button></a>
-      `;
-      document.getElementById('shareButtons').innerHTML = buttons;
-      updateShareStatus();
-    }
-
-    function countShare() {
+    function share(platform) {
+      let shareCount = parseInt(localStorage.getItem('tiffyShareCount') || '0');
       shareCount++;
-      if (!shareStart) {
-        shareStart = Date.now();
-        localStorage.setItem('tiffyShareStart', shareStart);
-      }
       localStorage.setItem('tiffyShareCount', shareCount);
-      updateShareStatus();
+      if (!localStorage.getItem('tiffyFirstShare')) {
+        localStorage.setItem('tiffyFirstShare', Date.now());
+      }
+
+      const link = document.getElementById('refLink').value || window.location.href;
+      if (platform === 'whatsapp') {
+        window.open(`https://wa.me/?text=Join%20TiffyAI!%20${encodeURIComponent(link)}`, '_blank');
+      } else if (platform === 'twitter') {
+        window.open(`https://twitter.com/intent/tweet?text=Join%20TiffyAI!&url=${encodeURIComponent(link)}`, '_blank');
+      } else if (platform === 'telegram') {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Join%20TiffyAI!`, '_blank');
+      } else if (platform === 'discord') {
+        navigator.clipboard.writeText(link);
+        alert("Referral link copied. Paste it in your favorite Discord server!");
+      }
+
+      updateStats();
     }
 
-    function updateShareStatus() {
-      const username = localStorage.getItem('tiffyUsername') || 'Tiffy Friend';
-      const remaining = Math.max(0, 10 - shareCount);
-      const msg = `So far ${username}! You’ve shared ${shareCount} times. Just ${remaining} more to go for Mainnet access… Time is running out.`;
-      typeWriter(msg, "shareCountStatus");
+    function updateStats() {
+      let shares = parseInt(localStorage.getItem('tiffyShareCount') || '0');
+      let blue = Math.floor(shares / 5);
+      let gold = Math.floor(shares / 10);
+      let prevGold = parseInt(localStorage.getItem('tiffyGoldKeys') || '0');
 
-      if (shareCount >= 3) document.getElementById('wheelSection').style.display = 'block';
-      if (shareCount >= 10) {
-        document.getElementById('mintSection').style.display = 'block';
-        const goldKeys = Math.floor(shareCount / 10);
-        const rewardImage = document.getElementById('rewardImage');
-        rewardImage.src = `Reward${goldKeys}.jpg`;
-        rewardImage.alt = `Reward ${goldKeys}`;
-        rewardImage.style.display = 'block';
+      document.getElementById('shareCount').innerText = shares;
+      document.getElementById('blueCount').innerText = blue;
+      document.getElementById('goldCount').innerText = gold;
 
-        if (goldKeys >= 10) {
-          document.getElementById('mainnetExchangeSection').style.display = 'block';
+      localStorage.setItem('tiffyBlueKeys', blue);
+      localStorage.setItem('tiffyGoldKeys', gold);
+
+      if (blue >= 3) document.getElementById('luckyWheelBtn').disabled = false;
+      if (gold >= 10) document.getElementById('mainnetBtn').style.display = 'inline-block';
+
+      if (gold > prevGold) {
+        document.getElementById('rewardImg').src = `Reward${gold}.jpg`;
+        document.getElementById('rewardImg').style.display = 'block';
+        localStorage.setItem('tiffyGoldKeys', gold);
+        if (gold === 1) {
+          window.location.href = '/treasure';
         }
       }
-      updateCountdown();
     }
 
-    function typeWriter(text, id, i = 0) {
-      const el = document.getElementById(id);
-      if (i < text.length) {
-        el.innerHTML = text.substring(0, i + 1);
-        setTimeout(() => typeWriter(text, id, i
-::contentReference[oaicite:24]{index=24}
- 
+    function startCountdown() {
+      let first = parseInt(localStorage.getItem('tiffyFirstShare') || '0');
+      setInterval(() => {
+        let now = Date.now();
+        let diff = 86400000 - (now - first);
+        if (diff <= 0) {
+          localStorage.removeItem('tiffyShareCount');
+          localStorage.removeItem('tiffyFirstShare');
+          document.getElementById('countdown').innerText = "New sharing day started!";
+          updateStats();
+          return;
+        }
+        let hrs = Math.floor(diff / 3600000);
+        let mins = Math.floor((diff % 3600000) / 60000);
+        let secs = Math.floor((diff % 60000) / 1000);
+        document.getElementById('countdown').innerText =
+          `${hrs.toString().padStart(2,'0')}h : ${mins.toString().padStart(2,'0')}m : ${secs.toString().padStart(2,'0')}s remaining`;
+      }, 1000);
+    }
+
+    window.onload = () => {
+      updateStats();
+      startCountdown();
+    };
+  </script>
+</body>
+</html>
