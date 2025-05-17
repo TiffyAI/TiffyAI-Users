@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: url('./MintBadgePlaceholder.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      text-shadow: 0 0 10px #00ffff;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 40px auto;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(to right, #00f0ff, #ff00ff);
+      color: #fff;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 0 10px #00ffff;
+    }
+    img.reward {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00ffff;
+    }
+    .big-text {
+      font-size: 22px;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script>
+    const WALLET_KEY = 'tiffy_wallet';
+    const SHARES_KEY = 'tiffy_shares';
+    const GOLD_KEY = 'tiffy_gold_keys';
+    const CLAIM_TIMESTAMP = 'tiffy_claim_time';
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const wallet = accounts[0];
+        localStorage.setItem(WALLET_KEY, wallet);
+        document.getElementById('walletAddress').innerText = `Connected: ${wallet}`;
+        loadData();
+      } else {
+        alert('MetaMask is not available.');
+      }
+    }
+
+    function loadData() {
+      const shares = parseInt(localStorage.getItem(SHARES_KEY) || '0');
+      const goldKeys = Math.floor(shares / 10);
+      const lastClaim = parseInt(localStorage.getItem(CLAIM_TIMESTAMP) || '0');
+      const now = Date.now();
+      const remaining = 24 * 60 * 60 * 1000 - (now - lastClaim);
+
+      document.getElementById('shareCount').innerText = `So far Cats! You’ve shared ${shares} times. Just 10 more to go for Treasure Rewards & You Have ${goldKeys} Gold Keys for Mainnet Eligibility.`;
+      document.getElementById('progressMessage').innerText = 'Collect All 10 to Enable Mainnet NFT Key Exchange & AI Trading.';
+
+      if (remaining > 0) {
+        const hrs = Math.floor(remaining / 3600000);
+        const mins = Math.floor((remaining % 3600000) / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('cooldownTimer').innerText = `You Have ${hrs} Hour ${mins} Min Left Before The Clock Will Reset`;
+      } else {
+        document.getElementById('cooldownTimer').innerText = `Cooldown expired. You can now claim again!`;
+      }
+
+      if (goldKeys >= 1) {
+        const rewardImage = goldKeys > 9 ? 'Reward9.jpg' : `Reward${goldKeys - 1}.jpg`;
+        document.getElementById('rewardImage').src = rewardImage;
+        document.getElementById('rewardImage').style.display = 'block';
+        document.getElementById('mainnetBtn').style.display = goldKeys >= 10 ? 'inline-block' : 'none';
+      }
+    }
+
+    function shareAndTrack() {
+      const lastClaim = parseInt(localStorage.getItem(CLAIM_TIMESTAMP) || '0');
+      const now = Date.now();
+      const remaining = 24 * 60 * 60 * 1000 - (now - lastClaim);
+
+      if (remaining <= 0) {
+        alert('You must claim the treasure first to start sharing.');
+        return;
+      }
+
+      const wallet = localStorage.getItem(WALLET_KEY);
+      const refLink = `https://tiffyai.github.io/Keys/?ref=${wallet}`;
+      const shareText = `I just claimed my Gold Treasure Key NFT for Mainnet on TiffyAI — Grab yours here: ${refLink}`;
+
+      const popup = window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`,
+        '_blank',
+        'width=600,height=400'
+      );
+
+      if (popup) {
+        let shares = parseInt(localStorage.getItem(SHARES_KEY) || '0');
+        shares++;
+        localStorage.setItem(SHARES_KEY, shares);
+        localStorage.setItem(GOLD_KEY, Math.floor(shares / 10));
+        loadData();
+      }
+    }
+
+    window.onload = () => {
+      const wallet = localStorage.getItem(WALLET_KEY);
+      if (wallet) {
+        document.getElementById('walletAddress').innerText = `Connected: ${wallet}`;
+      }
+      loadData();
+    }
+  </script>
+</head>
+<body>
+  <div class="glass">
+    <h1>Welcome to TiffyAI User Zone</h1>
+    <div id="walletAddress">Not connected</div>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="shareCount" class="big-text"></p>
+    <p id="progressMessage" class="big-text"></p>
+    <p id="cooldownTimer" class="big-text"></p>
+    <button onclick="shareAndTrack()">Share & Unlock Rewards</button>
+    <div>
+      <h2>You unlocked the Gold Key!</h2>
+      <img id="rewardImage" class="reward" src="Reward.jpg" style="display: none;" />
+    </div>
+    <button id="mainnetBtn" onclick="window.location.href='/Mainnet-Exchange'" style="display:none;">Go to Mainnet Exchange</button>
+  </div>
+</body>
+</html>
