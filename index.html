@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI User Zone</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: url('TiffyAI-Treasury.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    .overlay {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      margin: 40px auto;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 20px #0ff;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2em;
+      color: #0ff;
+    }
+    .score-line {
+      font-size: 1.1em;
+      color: #ff0;
+      margin: 15px 0;
+      text-shadow: 0 0 6px #f0f, 0 0 12px #f0f;
+    }
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      background: linear-gradient(45deg, #0ff, #f0f);
+      border: none;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .reward-img {
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #0ff;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <h1>Welcome to TiffyAI User Zone</h1>
+    <div id="walletAddress">Connecting...</div>
+    <div class="score-line" id="scoreLine">Loading score...</div>
+    <button onclick="shareAndUnlock()">Share & Unlock Rewards</button>
+    <div id="rewardContainer"></div>
+    <div id="mainnetExchangeBtn"></div>
+  </div>
+
+  <script>
+    const rewardContainer = document.getElementById('rewardContainer');
+    const scoreLine = document.getElementById('scoreLine');
+    const exchangeBtn = document.getElementById('mainnetExchangeBtn');
+
+    let shares = parseInt(localStorage.getItem('shares') || '0');
+    let goldKeys = parseInt(localStorage.getItem('goldKeys') || '0');
+
+    function updateUI() {
+      scoreLine.innerText = `Gold Keys: ${goldKeys} | Shares Today: ${shares % 10} | Time Left: ${getTimeLeft()}`;
+
+      // Show reward image based on current gold key level
+      if (goldKeys > 0) {
+        const rewardImg = document.createElement('img');
+        rewardImg.src = goldKeys >= 10 ? 'Reward9.jpg' : `Reward${goldKeys}.jpg`;
+        rewardImg.alt = `Reward ${goldKeys}`;
+        rewardImg.className = 'reward-img';
+        rewardContainer.innerHTML = '';
+        rewardContainer.appendChild(rewardImg);
+      }
+
+      // Show exchange button if 10 gold keys
+      if (goldKeys >= 10) {
+        exchangeBtn.innerHTML = '<button onclick="location.href=\'/Mainnet-Exchange\'">Go to Mainnet Exchange</button>';
+      }
+    }
+
+    function shareAndUnlock() {
+      // Cooldown check (24h)
+      const lastShare = parseInt(localStorage.getItem('lastShare') || '0');
+      const now = Date.now();
+      if (now - lastShare < 86400000) {
+        alert("You need to wait 24h before sharing again.");
+        return;
+      }
+
+      shares++;
+      localStorage.setItem('shares', shares);
+      localStorage.setItem('lastShare', now);
+
+      // Every 10 shares = 1 gold key
+      if (shares % 10 === 0) {
+        goldKeys++;
+        localStorage.setItem('goldKeys', goldKeys);
+        alert('You earned a Gold Key!');
+      }
+
+      updateUI();
+    }
+
+    function getTimeLeft() {
+      const lastShare = parseInt(localStorage.getItem('lastShare') || '0');
+      const now = Date.now();
+      let diff = 86400000 - (now - lastShare);
+      if (diff <= 0) return 'Cooldown expired!';
+
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      return `${hours}h ${minutes}m left`;
+    }
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          document.getElementById('walletAddress').innerText = `Connected: ${accounts[0]}`;
+        } catch (err) {
+          document.getElementById('walletAddress').innerText = 'Wallet connection failed.';
+        }
+      } else {
+        document.getElementById('walletAddress').innerText = 'No wallet detected';
+      }
+    }
+
+    connectWallet();
+    updateUI();
+  </script>
+</body>
+</html>
