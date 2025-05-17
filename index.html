@@ -48,7 +48,7 @@
     .discord  { background: linear-gradient(90deg, #5865f2, #9055ff); color: white; }
     .mint     { background: linear-gradient(90deg, gold, #ffdd57); color: #000; }
 
-    #mintSection, #wheelSection {
+    #mintSection, #wheelSection, #mainnetExchangeSection {
       display: none;
       margin-top: 20px;
     }
@@ -74,20 +74,16 @@
       white-space: pre-wrap;
     }
 
-    #rewardImageContainer img {
-      animation: fadeIn 1s ease-in-out;
-      max-width: 100%;
+    #rewardImage {
       margin-top: 15px;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px gold;
     }
 
     @keyframes glow {
       from { box-shadow: 0 0 10px #4af0f8; }
       to   { box-shadow: 0 0 20px #9055ff; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
   </style>
 </head>
@@ -99,7 +95,7 @@
 
     <input id="usernameInput" placeholder="Enter your username..." />
     <br>
-    <button id="connectWalletBtn" onclick="connectWallet()">Connect Wallet</button>
+    <button id="connectWalletBtn">Connect Wallet</button>
     <p id="walletInfo"></p>
     <p id="refLinkDisplay" style="font-size: 14px; color: #aaa;"></p>
 
@@ -117,9 +113,13 @@
 
     <div id="mintSection">
       <h3 style="color: gold;">You unlocked the Gold Key!</h3>
+      <img id="rewardImage" src="" alt="Reward Image" />
       <button class="mint" onclick="mintNFT()">Mint Mainnet NFT Badge</button>
-      <div id="rewardImageContainer"></div>
-      <div id="exchangeButtonContainer"></div>
+    </div>
+
+    <div id="mainnetExchangeSection">
+      <h3 style="color: #4af0f8;">Mainnet Exchange Unlocked!</h3>
+      <button onclick="goToMainnetExchange()">Go to Mainnet Exchange</button>
     </div>
   </div>
 
@@ -151,7 +151,7 @@
         const username = document.getElementById('usernameInput').value.trim();
         if (!username) return alert("Please enter a username.");
         localStorage.setItem('tiffyUsername', username);
-        document.getElementById('walletInfo').innerText = `Hey ${username} you doing great!`;
+        document.getElementById('walletInfo').innerText = `Hey ${username}, you're doing great!`;
         document.getElementById('connectWalletBtn').style.display = "none";
 
         const refLink = `https://tiffyai.github.io/Keys/?ref=${wallet}`;
@@ -161,6 +161,8 @@
         alert("Wallet connection failed: " + err.message);
       }
     }
+
+    document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
 
     function showShareButtons(link) {
       document.getElementById('shareSection').style.display = 'block';
@@ -187,33 +189,30 @@
 
     function updateShareStatus() {
       const username = localStorage.getItem('tiffyUsername') || 'Tiffy Friend';
-      const remaining = Math.max(0, 10 - (shareCount % 10));
+      const remaining = Math.max(0, 10 - shareCount);
       const msg = `So far ${username}! You’ve shared ${shareCount} times. Just ${remaining} more to go for Mainnet access… Time is running out.`;
       typeWriter(msg, "shareCountStatus");
 
       if (shareCount >= 3) document.getElementById('wheelSection').style.display = 'block';
-      if (shareCount >= 10) document.getElementById('mintSection').style.display = 'block';
-      updateCountdown();
+      if (shareCount >= 10) {
+        document.getElementById('mintSection').style.display = 'block';
+        const goldKeys = Math.floor(shareCount / 10);
+        const rewardImage = document.getElementById('rewardImage');
+        rewardImage.src = `Reward${goldKeys}.jpg`;
+        rewardImage.alt = `Reward ${goldKeys}`;
+        rewardImage.style.display = 'block';
 
-      // Display reward image
-      const goldKeys = Math.floor(shareCount / 10);
-      const rewardContainer = document.getElementById('rewardImageContainer');
-      rewardContainer.innerHTML = ''; // Clear previous image
-
-      if (goldKeys > 0 && goldKeys <= 9) {
-        const rewardImg = document.createElement('img');
-        rewardImg.src = `Reward${goldKeys}.jpg`;
-        rewardImg.alt = `Reward ${goldKeys}`;
-        rewardContainer.appendChild(rewardImg);
+        if (goldKeys >= 10) {
+          document.getElementById('mainnetExchangeSection').style.display = 'block';
+        }
       }
+      updateCountdown();
+    }
 
-      // Display exchange button after 10 Gold Keys (100 shares)
-      const exchangeContainer = document.getElementById('exchangeButtonContainer');
-      exchangeContainer.innerHTML = ''; // Clear previous button
-
-      if (goldKeys >= 10) {
-        const exchangeBtn = document.createElement('button');
-        exchangeBtn.textContent = 'Go to Mainnet Exchange';
-
-::contentReference[oaicite:20]{index=20}
+    function typeWriter(text, id, i = 0) {
+      const el = document.getElementById(id);
+      if (i < text.length) {
+        el.innerHTML = text.substring(0, i + 1);
+        setTimeout(() => typeWriter(text, id, i
+::contentReference[oaicite:24]{index=24}
  
