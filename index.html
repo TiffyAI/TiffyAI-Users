@@ -1,0 +1,167 @@
+<!-- Full code starts here -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('MintBadgePlaceholder.jpg') center/cover no-repeat;
+      height: 100vh;
+      overflow: auto;
+    }
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      color: #0ff;
+    }
+    h1 {
+      font-size: 2em;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+    }
+    button, #mint-link {
+      margin: 10px;
+      padding: 10px 20px;
+      background: none;
+      border: 2px solid #0ff;
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    button:hover, #mint-link:hover {
+      box-shadow: 0 0 10px #0ff;
+    }
+    #mint-link {
+      border-color: #f0f;
+      color: #f0f;
+      text-shadow: 0 0 5px #f0f;
+    }
+    #mint-link:hover {
+      box-shadow: 0 0 10px #f0f;
+    }
+    #reward-img {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 2px solid #0ff;
+      border-radius: 5px;
+    }
+    #next-claim-display {
+      margin: 10px 0;
+      font-size: 0.9em;
+      color: #0f0;
+      text-shadow: 0 0 3px #0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container glass">
+    <h1>TiffyAI User Zone</h1>
+    <div>
+      Wallet: <span id="wallet-display">Not connected</span>
+    </div>
+    <div>Blue Keys: <span id="blue-count">0</span></div>
+    <div>Gold Keys: <span id="gold-count">0</span></div>
+    <div id="next-claim-display">Claim available!</div>
+    <button id="claim-btn">Claim 1 Blue Key</button><br>
+    <button id="share-btn">Share</button><br>
+    <button id="wheel-btn" disabled>Lucky Wheel</button><br>
+    <button id="treasure-btn" disabled>Claim Treasure</button><br>
+    <a id="mint-link" href="/Mainnet-Exchange" style="display:none;">Mint NFT</a>
+    <div><img id="reward-img" src="Reward.jpg" alt="Reward Image"></div>
+  </div>
+
+  <script>
+    // Sync from Claim portal logic
+    let blue = parseInt(localStorage.getItem('tiffyBlueKeys')) || 0;
+    let gold = parseInt(localStorage.getItem('gold')) || 0;
+    let shareCount = parseInt(localStorage.getItem('shareCount')) || 0;
+    let treasureClaims = parseInt(localStorage.getItem('treasureClaims')) || 0;
+
+    const blueCountEl = document.getElementById('blue-count');
+    const goldCountEl = document.getElementById('gold-count');
+    const claimBtn = document.getElementById('claim-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const wheelBtn = document.getElementById('wheel-btn');
+    const treasureBtn = document.getElementById('treasure-btn');
+    const mintLink = document.getElementById('mint-link');
+    const rewardImg = document.getElementById('reward-img');
+    const nextClaimDisplay = document.getElementById('next-claim-display');
+    const walletDisplay = document.getElementById('wallet-display');
+
+    function updateUI() {
+      blueCountEl.textContent = blue;
+      goldCountEl.textContent = gold;
+
+      rewardImg.src = (gold <= 0) ? 'Reward.jpg' :
+        (gold < 10) ? `Reward${gold}.jpg` : 'Reward9.jpg';
+
+      wheelBtn.disabled = (blue < 3);
+      treasureBtn.disabled = (blue < 5);
+      treasureBtn.textContent = `Claim Treasure`;
+
+      mintLink.style.display = gold >= 10 ? 'inline-block' : 'none';
+    }
+
+    window.onload = () => {
+      const wallet = localStorage.getItem('walletAddress');
+      if (wallet) walletDisplay.textContent = wallet;
+      updateUI();
+    };
+
+    setInterval(updateUI, 1000);
+
+    claimBtn.addEventListener('click', function () {
+      blue++;
+      localStorage.setItem('tiffyBlueKeys', blue);
+      if (blue % 5 === 0) {
+        treasureClaims++;
+        localStorage.setItem('treasureClaims', treasureClaims);
+      }
+      updateUI();
+    });
+
+    shareBtn.addEventListener('click', () => {
+      const wallet = localStorage.getItem('walletAddress') || '';
+      const ref = encodeURIComponent(`https://www.tiffyai.co.za/getting-started?ref=${wallet}`);
+      const msg = encodeURIComponent("Join TiffyAI and earn free rewards! ");
+
+      window.open(`https://twitter.com/intent/tweet?text=${msg}&url=${ref}`, '_blank');
+
+      shareCount++;
+      localStorage.setItem('shareCount', shareCount);
+      if (shareCount % 10 === 0) {
+        gold++;
+        localStorage.setItem('gold', gold);
+      }
+      updateUI();
+    });
+
+    wheelBtn.addEventListener('click', function () {
+      if (blue >= 3) {
+        alert('Lucky Wheel unlocked!');
+      }
+    });
+
+    treasureBtn.addEventListener('click', function () {
+      if (blue >= 5) {
+        blue -= 5;
+        localStorage.setItem('tiffyBlueKeys', blue);
+        alert('Treasure Claimed!');
+        updateUI();
+      }
+    });
+  </script>
+</body>
+</html>
