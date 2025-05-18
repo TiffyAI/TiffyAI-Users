@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('MintBadgePlaceholder.jpg') center/cover no-repeat;
+      height: 100vh;
+      overflow: auto;
+    }
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      color: #0ff;
+    }
+    h1 {
+      font-size: 2em;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+    }
+    button, .share-platform-btn, #mint-link {
+      margin: 10px;
+      padding: 10px 20px;
+      background: none;
+      border: 2px solid #0ff;
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    button:hover, .share-platform-btn:hover, #mint-link:hover {
+      box-shadow: 0 0 10px #0ff;
+    }
+    #mint-link {
+      border-color: #f0f;
+      color: #f0f;
+      text-shadow: 0 0 5px #f0f;
+    }
+    #mint-link:hover {
+      box-shadow: 0 0 10px #f0f;
+    }
+    #earn-gold-btn {
+      font-size: 16px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #00ffff, #9055ff);
+      color: #fff;
+      border: 2px solid #00ffff;
+      animation: glowPulse 2s infinite;
+      text-shadow: 0 0 10px #00ffff;
+      box-shadow: 0 0 20px #00ffff;
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 10px #00ffff; transform: scale(1); }
+      50% { box-shadow: 0 0 30px #00ffff; transform: scale(1.05); }
+      100% { box-shadow: 0 0 10px #00ffff; transform: scale(1); }
+    }
+    .wallet-section {
+      margin-bottom: 20px;
+    }
+    #wallet-input {
+      border: 2px solid #0ff;
+      background: rgba(0, 0, 0, 0.7);
+      color: #0ff;
+      border-radius: 5px;
+      margin: 5px 0;
+      padding: 8px;
+    }
+    #wallet-display {
+      color: #0ff;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    #reward-img, #treasure-img {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 2px solid #0ff;
+      border-radius: 5px;
+    }
+    #next-claim-display {
+      margin: 10px 0;
+      font-size: 0.9em;
+      color: #0f0;
+      text-shadow: 0 0 3px #0f0;
+    }
+    .share-buttons {
+      display: none;
+      margin-top: 10px;
+    }
+    .pulse-glow {
+      animation: pulse 2s infinite ease-in-out;
+      width: 30px;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    .glow {
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 5px #00ffff); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 15px #00ffff); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 5px #00ffff); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container glass">
+    <h1>TiffyAI User Zone</h1>
+    <div class="wallet-section">
+      <button id="connect-wallet">Connect Wallet</button>
+      <input id="wallet-input" placeholder="Enter wallet address" style="display:none;">
+      <button id="save-wallet" style="display:none;">Save Wallet</button>
+      <div>Wallet: <span id="wallet-display">Not connected</span></div>
+    </div>
+    <div>Blue Keys: <span id="blue-count">0</span></div>
+    <div>Gold Keys: <span id="gold-count">0</span></div>
+    <div>Total Shares: <span id="share-count">0</span></div>
+    <div id="next-claim-display">Claim available!</div>
+
+    <button id="claim-btn" class="glow">Claim 1 Blue Key</button>
+    <img src="Keys.png" class="pulse-glow" alt="Key" />
+
+    <br>
+    <button id="earn-gold-btn">Earn Your Gold Keys Unlock Your Treasure</button>
+    <div class="share-buttons" id="share-buttons">
+      <button class="share-platform-btn" onclick="shareNow('twitter')">Twitter</button>
+      <button class="share-platform-btn" onclick="shareNow('telegram')">Telegram</button>
+      <button class="share-platform-btn" onclick="shareNow('whatsapp')">WhatsApp</button>
+      <button class="share-platform-btn" onclick="shareNow('discord')">Discord</button>
+    </div>
+
+    <br><button id="wheel-btn" style="display:none;" class="glow">Lucky Wheel</button>
+    <br><button id="treasure-btn" style="display:none;" class="glow">Claim Treasure</button>
+    <br><a id="mint-link" href="/Mainnet-Exchange" style="display:none;">Mint NFT</a>
+
+    <div>
+      <img id="treasure-img" src="Treasure-Chest.jpg" style="display:none;" />
+      <img id="reward-img" src="Reward.jpg" alt="Reward Image">
+    </div>
+  </div>
+
+  <script>
+    // Replace the share button event
+    document.getElementById('earn-gold-btn').onclick = function () {
+      this.style.display = 'none';
+      document.getElementById('share-buttons').style.display = 'block';
+    };
+  </script>
+</body>
+</html>
