@@ -33,48 +33,42 @@
       background: none;
       border: 2px solid #0ff;
       color: #0ff;
+      text-shadow: 0 0 5px #0ff;
       border-radius: 5px;
       cursor: pointer;
-      text-shadow: 0 0 5px #0ff;
     }
     button:hover, .share-platform-btn:hover, #mint-link:hover {
       box-shadow: 0 0 10px #0ff;
     }
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
     #mint-link {
       border-color: #f0f;
       color: #f0f;
-      text-shadow: 0 0 5px #f0f;
     }
     .wallet-section {
       margin-bottom: 20px;
     }
-    #wallet-input {
-      border: 2px solid #0ff;
-      background: rgba(0, 0, 0, 0.7);
-      color: #0ff;
-      border-radius: 5px;
-      padding: 8px;
-    }
-    #reward-img {
-      max-width: 100%;
-      margin-top: 20px;
-      border: 2px solid #0ff;
-      border-radius: 5px;
-    }
-    #treasure-img {
-      display: none;
-      width: 100%;
-      margin-top: 10px;
-      border: 2px solid gold;
-      border-radius: 5px;
-      animation: pulse 3s infinite;
-    }
-    .share-buttons { display: none; margin-top: 10px; }
     .pulse-glow {
       animation: pulse 2s infinite ease-in-out;
       width: 30px;
       vertical-align: middle;
       margin-left: 10px;
+    }
+    .share-buttons {
+      display: none;
+    }
+    #reward-img, #treasure-chest {
+      max-width: 100%;
+      margin-top: 20px;
+      border-radius: 5px;
+      display: none;
+    }
+    #treasure-chest {
+      display: none;
+      animation: pulse 2s infinite ease-in-out;
     }
     @keyframes pulse {
       0% { transform: scale(1); filter: drop-shadow(0 0 5px #00ffff); }
@@ -84,7 +78,7 @@
   </style>
 </head>
 <body>
-  <div class="container glass">
+  <div class="container">
     <h1>TiffyAI User Zone</h1>
     <div class="wallet-section">
       <button id="connect-wallet">Connect Wallet</button>
@@ -98,6 +92,7 @@
     <div>Total Shares: <span id="share-count">0</span></div>
 
     <div id="next-claim-display">Claim available!</div>
+
     <button id="claim-btn">Claim 1 Blue Key</button>
     <img src="Keys.png" class="pulse-glow" alt="Key" />
 
@@ -110,80 +105,107 @@
     </div>
 
     <br><button id="wheel-btn" style="display:none;">Lucky Wheel</button>
-    <br><button id="treasure-btn" style="display:none;" onclick="window.location.href='/treasure'">Claim Treasure</button>
+    <br><button id="treasure-btn" style="display:none;">Claim Treasure</button>
     <br><a id="mint-link" href="/Mainnet-Exchange" style="display:none;">Mint NFT</a>
 
-    <img id="reward-img" src="Reward.jpg" alt="Reward Image">
-    <img id="treasure-img" src="Treasure-Chest.jpg" alt="Treasure Chest">
+    <div><img id="treasure-chest" src="Treasure-Chest.jpg" alt="Treasure Chest"></div>
+    <div><img id="reward-img" src="Reward.jpg" alt="Reward"></div>
   </div>
 
   <script>
-    let blue = parseInt(localStorage.getItem('tiffyBlueKeys')) || 0;
-    let gold = parseInt(localStorage.getItem('gold')) || 0;
-    let shareCount = parseInt(localStorage.getItem('shareCount')) || 0;
-    let nextClaim = parseInt(localStorage.getItem('nextClaim')) || 0;
-    let wheelUnlockTime = parseInt(localStorage.getItem('wheelUnlockTime')) || 0;
-    let wallet = localStorage.getItem('walletAddress') || "";
+    const blue = Math.max(0, parseInt(localStorage.getItem('blue')) || 0);
+    const gold = parseInt(localStorage.getItem('gold')) || 0;
+    const shareCount = parseInt(localStorage.getItem('shareCount')) || 0;
+    const nextClaim = parseInt(localStorage.getItem('nextClaim')) || 0;
+    const wheelUsed = parseInt(localStorage.getItem('wheelUsed')) || 0;
+    const treasureUsed = parseInt(localStorage.getItem('treasureUsed')) || 0;
+
+    const blueEl = document.getElementById('blue-count');
+    const goldEl = document.getElementById('gold-count');
+    const shareEl = document.getElementById('share-count');
+    const claimBtn = document.getElementById('claim-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const wheelBtn = document.getElementById('wheel-btn');
+    const treasureBtn = document.getElementById('treasure-btn');
+    const mintLink = document.getElementById('mint-link');
+    const rewardImg = document.getElementById('reward-img');
+    const chestImg = document.getElementById('treasure-chest');
+    const nextClaimEl = document.getElementById('next-claim-display');
+    const walletDisplay = document.getElementById('wallet-display');
 
     function updateUI() {
-      document.getElementById('blue-count').textContent = blue;
-      document.getElementById('gold-count').textContent = gold;
-      document.getElementById('share-count').textContent = shareCount;
+      blueEl.textContent = blue;
+      goldEl.textContent = gold;
+      shareEl.textContent = shareCount;
 
-      let now = Date.now();
-      let cooldownText = 'Claim available!';
-      if (now < nextClaim) {
+      if (gold > 0) chestImg.style.display = 'block';
+      else chestImg.style.display = 'none';
+
+      rewardImg.src = (gold < 1) ? 'Reward.jpg' :
+        (gold < 10) ? `Reward${gold}.jpg` : 'Reward9.jpg';
+      rewardImg.style.display = 'block';
+
+      const now = Date.now();
+      if (now >= nextClaim) {
+        claimBtn.style.display = 'inline-block';
+        nextClaimEl.textContent = 'Claim available!';
+      } else {
+        claimBtn.style.display = 'none';
         let diff = nextClaim - now;
         let h = Math.floor(diff / 3600000).toString().padStart(2, '0');
         let m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
         let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-        cooldownText = `Next claim in ${h}:${m}:${s}`;
-        document.getElementById('claim-btn').style.display = 'none';
-      } else {
-        document.getElementById('claim-btn').style.display = 'inline-block';
-        document.getElementById('claim-btn').style.boxShadow = '0 0 10px #FFD700';
-      }
-      document.getElementById('next-claim-display').textContent = cooldownText;
-
-      // Show Lucky Wheel after 3 blue keys, hide after 24h
-      if (blue >= 3 && (now - wheelUnlockTime < 86400000)) {
-        document.getElementById('wheel-btn').style.display = 'inline-block';
-      } else {
-        document.getElementById('wheel-btn').style.display = 'none';
+        nextClaimEl.textContent = `Next claim in ${h}:${m}:${s}`;
       }
 
-      // Show Treasure after 1 gold key
-      document.getElementById('treasure-btn').style.display = (gold >= 1) ? 'inline-block' : 'none';
-      document.getElementById('treasure-img').style.display = (gold >= 1) ? 'inline-block' : 'none';
+      if (blue >= 3 && wheelUsed < Math.floor(blue / 3)) {
+        wheelBtn.style.display = 'inline-block';
+      } else {
+        wheelBtn.style.display = 'none';
+      }
 
-      // Mint link after 10 gold keys
-      document.getElementById('mint-link').style.display = (gold >= 10) ? 'inline-block' : 'none';
+      if (shareCount >= 10 && treasureUsed < Math.floor(shareCount / 10)) {
+        treasureBtn.style.display = 'inline-block';
+      } else {
+        treasureBtn.style.display = 'none';
+      }
 
-      document.getElementById('reward-img').src = gold < 1 ? 'Reward.jpg' :
-        (gold < 10 ? `Reward${gold}.jpg` : 'Reward9.jpg');
+      if (gold >= 10) mintLink.style.display = 'inline-block';
+      else mintLink.style.display = 'none';
     }
 
-    document.getElementById('claim-btn').onclick = () => {
+    claimBtn.onclick = () => {
       if (Date.now() < nextClaim) return;
-      blue++;
-      localStorage.setItem('tiffyBlueKeys', blue);
-      nextClaim = Date.now() + 86400000;
-      localStorage.setItem('nextClaim', nextClaim);
-      if (blue === 3) {
-        wheelUnlockTime = Date.now();
-        localStorage.setItem('wheelUnlockTime', wheelUnlockTime);
-      }
-      if (blue % 5 === 0) {
-        gold++;
-        localStorage.setItem('gold', gold);
-      }
+      const newBlue = blue + 1;
+      localStorage.setItem('blue', newBlue);
+      localStorage.setItem('nextClaim', Date.now() + 86400000);
+      updateUI();
+      location.reload(); // Refresh to sync logic
+    };
+
+    wheelBtn.onclick = () => {
+      const used = Math.floor(blue / 3);
+      localStorage.setItem('wheelUsed', used);
+      window.open('https://tiffyai.github.io/Lucky-Wheel/', '_blank');
       updateUI();
     };
 
+    treasureBtn.onclick = () => {
+      const used = Math.floor(shareCount / 10);
+      localStorage.setItem('treasureUsed', used);
+      window.open('https://tiffyai.github.io/treasure/', '_blank');
+      updateUI();
+    };
+
+    shareBtn.onclick = () => {
+      shareBtn.style.display = 'none';
+      document.getElementById('share-buttons').style.display = 'block';
+    };
+
     function shareNow(platform) {
-      let ref = wallet || 'guest';
-      let url = encodeURIComponent(`https://www.tiffyai.co.za/getting-started?ref=${ref}`);
-      let text = encodeURIComponent("Check out TiffyAI! Earn keys and rewards. Join now:");
+      const wallet = localStorage.getItem('walletAddress') || 'guest';
+      const url = encodeURIComponent(`https://www.tiffyai.co.za/getting-started?ref=${wallet}`);
+      const text = encodeURIComponent("Check out TiffyAI! Earn keys and rewards. Join now:");
       let link = '#';
       if (platform === 'twitter') link = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
       if (platform === 'telegram') link = `https://t.me/share/url?url=${url}&text=${text}`;
@@ -191,46 +213,31 @@
       if (platform === 'discord') link = `https://discord.com/channels/@me`;
 
       window.open(link, '_blank');
-      shareCount++;
-      localStorage.setItem('shareCount', shareCount);
-      if (shareCount % 10 === 0) {
-        gold++;
-        localStorage.setItem('gold', gold);
+      const shares = shareCount + 1;
+      localStorage.setItem('shareCount', shares);
+      if (shares % 10 === 0) {
+        const newGold = gold + 1;
+        localStorage.setItem('gold', newGold);
       }
       updateUI();
     }
-
-    document.getElementById('share-btn').onclick = () => {
-      document.getElementById('share-btn').style.display = 'none';
-      document.getElementById('share-buttons').style.display = 'block';
-    };
 
     document.getElementById('connect-wallet').onclick = async () => {
       if (window.ethereum) {
         try {
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          wallet = accounts[0];
+          const wallet = accounts[0];
           localStorage.setItem('walletAddress', wallet);
-          document.getElementById('wallet-display').textContent = wallet;
+          walletDisplay.textContent = wallet;
+          document.getElementById('connect-wallet').style.display = 'none';
         } catch {
           console.error('Wallet connection failed');
         }
-      } else {
-        document.getElementById('wallet-input').style.display = 'inline-block';
-        document.getElementById('save-wallet').style.display = 'inline-block';
       }
     };
 
-    document.getElementById('save-wallet').onclick = () => {
-      wallet = document.getElementById('wallet-input').value.trim();
-      if (wallet) {
-        localStorage.setItem('walletAddress', wallet);
-        document.getElementById('wallet-display').textContent = wallet;
-      }
-    };
-
+    updateUI();
     setInterval(updateUI, 1000);
-    window.onload = updateUI;
   </script>
 </body>
 </html>
