@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI Claim Portal</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('MintBadgePlaceholder.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      text-align: center;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      max-width: 400px;
+      margin: 5% auto;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #00f7ff;
+      margin-bottom: 1rem;
+    }
+    #addressDisplay {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      word-wrap: break-word;
+    }
+    .btn {
+      margin: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(145deg, #ff00cc, #3333ff);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: linear-gradient(145deg, #3333ff, #ff00cc);
+    }
+    .status {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+    .reward-img {
+      margin-top: 1rem;
+      width: 100%;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="glass">
+    <h1>Welcome to TiffyAI User Zone</h1>
+    <div id="addressDisplay">Connect your wallet</div>
+    <button class="btn" onclick="connectWallet()">Connect Wallet</button>
+    <div class="status" id="statusText"></div>
+    <div class="status" id="cooldownText"></div>
+    <button class="btn" onclick="shareNow()">Share & Unlock Rewards</button>
+    <img id="rewardImg" class="reward-img" src="" style="display:none" />
+  </div>
+  <script>
+    const statusText = document.getElementById('statusText');
+    const cooldownText = document.getElementById('cooldownText');
+    const rewardImg = document.getElementById('rewardImg');
+    const addressDisplay = document.getElementById('addressDisplay');
+
+    let userAddress = '';
+
+    function connectWallet() {
+      if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
+          userAddress = accounts[0];
+          addressDisplay.innerText = `Connected: ${userAddress}`;
+          loadProgress();
+        });
+      } else {
+        alert('Please install MetaMask');
+      }
+    }
+
+    function loadProgress() {
+      const shares = parseInt(localStorage.getItem('shares') || '0');
+      const goldKeys = Math.floor(shares / 10);
+      statusText.innerHTML = `So far Cats! You’ve shared ${shares} times.<br>Just 10 more to go for Treasure Rewards.<br>You Have ${goldKeys} Gold Keys for Mainnet Eligibility.`;
+      const cooldownEnd = parseInt(localStorage.getItem('cooldownEnd') || '0');
+      const now = Date.now();
+      if (cooldownEnd > now) {
+        const timeLeft = cooldownEnd - now;
+        const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        cooldownText.innerText = `Cooldown in progress. Reset in ${hours}h ${minutes}m.`;
+      } else {
+        cooldownText.innerText = `Cooldown expired. Share again now!`;
+      }
+      if (goldKeys > 0) {
+        rewardImg.src = `Reward${goldKeys > 9 ? 9 : goldKeys}.jpg`;
+        rewardImg.style.display = 'block';
+      }
+    }
+
+    function shareNow() {
+      if (!userAddress) return alert('Connect wallet first!');
+      const url = `https://www.tiffyai.co.za/${userAddress}`;
+      const text = encodeURIComponent(`Check out TiffyAI! Earn keys, Treasures and Lucky-Wheel rewards. Join now: ${url}`);
+      const shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+      window.open(shareUrl, '_blank');
+      const shares = parseInt(localStorage.getItem('shares') || '0') + 1;
+      localStorage.setItem('shares', shares);
+      loadProgress();
+    }
+
+    window.onload = () => {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        userAddress = window.ethereum.selectedAddress;
+        addressDisplay.innerText = `Connected: ${userAddress}`;
+        loadProgress();
+      }
+    };
+  </script>
+</body>
+</html>
