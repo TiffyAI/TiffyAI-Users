@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiffyAI User Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+</head>
+<body style="margin: 0; background: url('MintBadgePlaceholder.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Orbitron', sans-serif; color: white;">
+
+  <div id="glass" style="backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; margin: auto; margin-top: 40px; width: 90%; max-width: 400px; box-shadow: 0 0 20px rgba(0,0,0,0.6);">
+    <h1 style="font-size: 24px; text-align: center;">Welcome to TiffyAI User Zone</h1>
+    <p id="wallet" style="font-size: 14px; text-align: center; margin-bottom: 10px;">Not Connected</p>
+
+    <button onclick="connectWallet()" style="width: 100%; padding: 10px; font-size: 16px; background: linear-gradient(45deg, #00f, #f0f); border: none; border-radius: 10px; color: white; cursor: pointer;">Connect Wallet</button>
+
+    <div style="margin-top: 20px;">
+      <p id="score" style="font-size: 16px; text-align: center;">So far Cats! You’ve shared 0 times. Just 10 more to go for Treasure Rewards & You Have 0 Gold Keys for Mainnet Eligibility.</p>
+      <p id="timer" style="font-size: 14px; text-align: center;">You Have 0 Hour 00 Min Left Before The Clock Will Reset</p>
+
+      <div style="text-align: center; margin-top: 15px;">
+        <button onclick="share('twitter')">Share on Twitter</button>
+        <button onclick="share('whatsapp')">WhatsApp</button>
+        <button onclick="share('telegram')">Telegram</button>
+        <button onclick="share('discord')">Discord</button>
+      </div>
+    </div>
+
+    <div id="rewardImage" style="text-align: center; margin-top: 20px;"></div>
+
+  </div>
+
+  <script>
+    let userAddress = '';
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        document.getElementById('wallet').innerText = 'Connected: ' + userAddress;
+        updateStats();
+      }
+    }
+
+    function updateStats() {
+      const shares = parseInt(localStorage.getItem(`${userAddress}_shares`) || 0);
+      const goldKeys = Math.floor(shares / 10);
+      document.getElementById('score').innerText = `So far Cats! You’ve shared ${shares} times. Just ${10 - (shares % 10)} more to go for Treasure Rewards & You Have ${goldKeys} Gold Keys for Mainnet Eligibility.`;
+      const lastClaim = parseInt(localStorage.getItem(`${userAddress}_lastClaim`) || 0);
+      const timeLeft = Math.max(0, (86400000 - (Date.now() - lastClaim)));
+      const hrs = Math.floor(timeLeft / 3600000);
+      const mins = Math.floor((timeLeft % 3600000) / 60000);
+      document.getElementById('timer').innerText = `You Have ${hrs} Hour ${mins} Min Left Before The Clock Will Reset`;
+
+      const rewardImage = document.getElementById('rewardImage');
+      rewardImage.innerHTML = goldKeys > 0 ? `<img src="Reward${goldKeys > 9 ? 9 : goldKeys}.jpg" style="max-width:100%; border-radius: 15px; box-shadow: 0 0 15px #fff;">` : '';
+    }
+
+    function share(platform) {
+      if (!userAddress) return alert('Connect wallet first.');
+      const refLink = `https://www.tiffyai.co.za/${userAddress}`;
+      const message = encodeURIComponent(`Check out TiffyAI! Earn keys, Treasures and Lucky-Wheel rewards. Join now: ${refLink}`);
+      let url = '';
+
+      switch(platform) {
+        case 'twitter':
+          url = `https://twitter.com/intent/tweet?text=${message}`;
+          break;
+        case 'whatsapp':
+          url = `https://wa.me/?text=${message}`;
+          break;
+        case 'telegram':
+          url = `https://t.me/share/url?url=${refLink}&text=${message}`;
+          break;
+        case 'discord':
+          url = `https://discord.com/channels/@me`; // Can't preload text in Discord
+          break;
+      }
+
+      window.open(url, '_blank');
+
+      let shares = parseInt(localStorage.getItem(`${userAddress}_shares`) || 0);
+      shares++;
+      localStorage.setItem(`${userAddress}_shares`, shares);
+      updateStats();
+    }
+
+    // Auto-connect if wallet already available
+    window.addEventListener('load', async () => {
+      if (window.ethereum && ethereum.selectedAddress) {
+        userAddress = ethereum.selectedAddress;
+        document.getElementById('wallet').innerText = 'Connected: ' + userAddress;
+        updateStats();
+      }
+    });
+  </script>
+
+</body>
+</html>
