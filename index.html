@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TiffyAI User Zone</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('MintBadgePlaceholder.jpg') center/cover no-repeat;
+      height: 100vh;
+      overflow: auto;
+    }
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      color: #0ff;
+    }
+    h1 {
+      font-size: 2em;
+      color: #0ff;
+      text-shadow: 0 0 8px #0ff;
+    }
+    button, .share-platform-btn, #mint-link {
+      margin: 10px;
+      padding: 10px 20px;
+      background: none;
+      border: 2px solid #0ff;
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    button:hover, .share-platform-btn:hover, #mint-link:hover {
+      box-shadow: 0 0 10px #0ff;
+    }
+    #mint-link {
+      border-color: #f0f;
+      color: #f0f;
+      text-shadow: 0 0 5px #f0f;
+    }
+    #mint-link:hover {
+      box-shadow: 0 0 10px #f0f;
+    }
+    .wallet-section {
+      margin-bottom: 20px;
+    }
+    #wallet-input {
+      border: 2px solid #0ff;
+      background: rgba(0, 0, 0, 0.7);
+      color: #0ff;
+      border-radius: 5px;
+      margin: 5px 0;
+      padding: 8px;
+    }
+    #wallet-display {
+      color: #0ff;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    #reward-img {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 2px solid #0ff;
+      border-radius: 5px;
+    }
+    #next-claim-display {
+      margin: 10px 0;
+      font-size: 0.9em;
+      color: #0f0;
+      text-shadow: 0 0 3px #0f0;
+    }
+    .share-buttons {
+      display: none;
+      margin-top: 10px;
+    }
+    .pulse-glow {
+      animation: pulse 2s infinite ease-in-out;
+      width: 30px;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); filter: drop-shadow(0 0 5px #00ffff); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 15px #00ffff); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 5px #00ffff); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container glass">
+    <h1>TiffyAI User Zone</h1>
+    <div class="wallet-section">
+      <button id="connect-wallet">Connect Wallet</button>
+      <input id="wallet-input" placeholder="Enter wallet address" style="display:none;">
+      <button id="save-wallet" style="display:none;">Save Wallet</button>
+      <div>Wallet: <span id="wallet-display">Not connected</span></div>
+    </div>
+
+    <div id="blueKeyDisplay">You've claimed 0/10 Blue Keys to unlock a treasure chest</div>
+    <div>Gold Keys: <span id="gold-count">0</span></div>
+    <div>Total Shares: <span id="share-count">0</span></div>
+
+    <div id="next-claim-display">Claim available!</div>
+
+    <button id="claim-btn">Claim 1 Blue Key</button>
+    <img src="Keys.png" class="pulse-glow" alt="Key" />
+
+    <br>
+    <button id="share-btn">Share</button>
+    <div class="share-buttons" id="share-buttons">
+      <button class="share-platform-btn" onclick="shareNow('twitter')">Twitter</button>
+      <button class="share-platform-btn" onclick="shareNow('telegram')">Telegram</button>
+      <button class="share-platform-btn" onclick="shareNow('whatsapp')">WhatsApp</button>
+      <button class="share-platform-btn" onclick="shareNow('discord')">Discord</button>
+    </div>
+
+    <br><button id="wheel-btn" disabled>Lucky Wheel</button>
+    <br><button id="treasure-btn" disabled>Claim Treasure</button>
+    <br><a id="mint-link" href="/Mainnet-Exchange" style="display:none;">Mint NFT</a>
+
+    <div><img id="reward-img" src="Reward.jpg" alt="Reward Image"></div>
+  </div>
+
+  <script>
+    let blue = parseInt(localStorage.getItem('tiffyBlueKeys')) || 0;
+    let gold = parseInt(localStorage.getItem('gold')) || 0;
+    let shareCount = parseInt(localStorage.getItem('shareCount')) || 0;
+    let nextClaim = parseInt(localStorage.getItem('nextClaim')) || 0;
+    let treasureClaims = parseInt(localStorage.getItem('treasureClaims')) || 0;
+
+    const blueKeyDisplay = document.getElementById('blueKeyDisplay');
+    const goldCountEl = document.getElementById('gold-count');
+    const shareCountEl = document.getElementById('share-count');
+    const claimBtn = document.getElementById('claim-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const wheelBtn = document.getElementById('wheel-btn');
+    const treasureBtn = document.getElementById('treasure-btn');
+    const mintLink = document.getElementById('mint-link');
+    const rewardImg = document.getElementById('reward-img');
+    const nextClaimDisplay = document.getElementById('next-claim-display');
+    const connectWalletBtn = document.getElementById('connect-wallet');
+    const walletInput = document.getElementById('wallet-input');
+    const saveWalletBtn = document.getElementById('save-wallet');
+    const walletDisplay = document.getElementById('wallet-display');
+
+    function updateBlueDisplay() {
+      blueKeyDisplay.innerHTML = `You've claimed ${blue}/10 Blue Keys to unlock a treasure chest<br><img src="Keys.png" class="pulse-glow" alt="Key" />`;
+    }
+
+    function updateUI() {
+      updateBlueDisplay();
+      goldCountEl.textContent = gold;
+      shareCountEl.textContent = shareCount;
+
+      rewardImg.src = (gold < 1) ? 'Reward.jpg' :
+        (gold < 10) ? `Reward${gold}.jpg` : 'Reward9.jpg';
+
+      if (Date.now() >= nextClaim) {
+        claimBtn.disabled = false;
+        nextClaimDisplay.textContent = 'Claim available!';
+      } else {
+        claimBtn.disabled = true;
+        let diff = nextClaim - Date.now();
+        let h = Math.floor(diff / 3600000).toString().padStart(2, '0');
+        let m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+        let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        nextClaimDisplay.textContent = `Next claim in ${h}:${m}:${s}`;
+      }
+
+      wheelBtn.disabled = (blue < 3);
+      treasureBtn.disabled = (treasureClaims < 1);
+      treasureBtn.textContent = `Claim Treasure (${treasureClaims})`;
+      mintLink.style.display = (gold >= 10) ? 'inline-block' : 'none';
+    }
+
+    window.onload = () => {
+      let savedWallet = localStorage.getItem('walletAddress');
+      if (savedWallet) {
+        walletDisplay.textContent = savedWallet;
+        connectWalletBtn.style.display = 'none';
+      }
+      updateUI();
+    };
+
+    setInterval(updateUI, 1000);
+
+    claimBtn.onclick = () => {
+      if (Date.now() < nextClaim) return;
+      blue++;
+      localStorage.setItem('tiffyBlueKeys', blue);
+      nextClaim = Date.now() + 86400000;
+      localStorage.setItem('nextClaim', nextClaim);
+
+      if (blue % 5 === 0) {
+        treasureClaims++;
+        localStorage.setItem('treasureClaims', treasureClaims);
+      }
+      if (blue === 10) {
+        gold++;
+        localStorage.setItem('gold', gold);
+      }
+      updateUI();
+    };
+
+    function shareNow(platform) {
+      let wallet = localStorage.getItem('walletAddress') || 'guest';
+      const url = encodeURIComponent(`https://www.tiffyai.co.za/getting-started?ref=${wallet}`);
+      const text = encodeURIComponent("Check out TiffyAI! Earn keys and rewards. Join now:");
+
+      let link = '#';
+      if (platform === 'twitter') link = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+      if (platform === 'telegram') link = `https://t.me/share/url?url=${url}&text=${text}`;
+      if (platform === 'whatsapp') link = `https://wa.me/?text=${text}%20${url}`;
+      if (platform === 'discord') link = `https://discord.com/channels/@me`;
+
+      window.open(link, '_blank');
+      shareCount++;
+      localStorage.setItem('shareCount', shareCount);
+      if (shareCount % 10 === 0) {
+        gold++;
+        localStorage.setItem('gold', gold);
+      }
+      updateUI();
+    }
+
+    shareBtn.onclick = () => {
+      shareBtn.style.display = 'none';
+      document.getElementById('share-buttons').style.display = 'block';
+    };
+
+    treasureBtn.onclick = () => {
+      if (treasureClaims > 0) {
+        treasureClaims--;
+        localStorage.setItem('treasureClaims', treasureClaims);
+        alert('Treasure claimed!');
+        updateUI();
+      }
+    };
+
+    connectWalletBtn.onclick = async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const wallet = accounts[0];
+          localStorage.setItem('walletAddress', wallet);
+          walletDisplay.textContent = wallet;
+          connectWalletBtn.style.display = 'none';
+        } catch {
+          console.error('Wallet connection failed');
+        }
+      } else {
+        walletInput.style.display = 'inline-block';
+        saveWalletBtn.style.display = 'inline-block';
+      }
+    };
+
+    saveWalletBtn.onclick = () => {
+      const wallet = walletInput.value.trim();
+      if (wallet) {
+        localStorage.setItem('walletAddress', wallet);
+        walletDisplay.textContent = wallet;
+        connectWalletBtn.style.display = 'none';
+        walletInput.style.display = 'none';
+        saveWalletBtn.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>
